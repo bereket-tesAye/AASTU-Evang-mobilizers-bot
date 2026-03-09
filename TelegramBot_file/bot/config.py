@@ -1,5 +1,0 @@
-import os
-
-BOT_TOKEN = "8085420020:AAE0Hz8XItAOARUvjHL_i5HqHV-LSbkxo_E"
-DATABASE = "bot_data.db"
-ADMIN_IDS = [5400503163]
