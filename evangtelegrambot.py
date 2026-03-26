@@ -119,16 +119,25 @@ sex_keyboard.row("Male", "Female")
 sex_keyboard.row("❌ ሰርዝ (Cancel)")
 
 STUDY_FILES_MAP = {
-    "እኩል ስልጣን ካላቸው በ ዩሐ5 ለምን አብ ከእኔ ይበልጣል አለ?" : "Equality with God Father.Docx",
-    "ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ አለ ወይ?" : "The word Trinity.Docx",
-    "አምላክ እንዴት ወደ አምላክ ይፀልያል?" : "Jesus_pray.Docx",
-    "አምላክ እንዴት ይወልዳል?" : "begetting.Docx",
-    "ስንት አምላክ ነው ያላቹ?" : "how many God.Docx",
-    "አንድ አምላክ እንዴት የአንድ አምላክ ልጅ ይባላል?" : "የኢየሱስ መለኮታዊ ልጅነት.pptx",
-    "የውሃ ጥምቀት በኢየሱስ ክርስቶስ ስም" : "የውሃ_ጥምቀት_በኢየሱስ_ክርስቶስ_ስም.pptx",
-    "ትምህርተ ሥላሴና የአረማውያኑ" : "ትምህርተ ሥላሴና የአረማውያኑ.pptx",
-    "የኦንሊ ጂሰሱ_አብ ወልድና መንፈስ ቅዱስ" : "የኦንሊ_ጂሰሱ_አብ፣_ወልድና_መንፈስ_ቅዱስ.pptx",
-    "አብ ፣ ወልድና መንፈስ ቅዱስ የተለያዩ አካላት አይደሉምን" : "አብ፣_ወልድና_መንፈስ_ቅዱስ_የተለያዩ_አካላት_አይደሉምን.pptx"
+    "እኩል ስልጣን ካላቸው በ ዩሐ5 ለምን አብ ከእኔ ይበልጣል አለ?" : "BQACAgQAAyEFAATkiwQeAAMUacTbMcmwvG88u9injn2s_JNg3ZIAAhMdAAIHdihST2mm2MGw0qo6BA",
+    
+    "ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ አለ ወይ?" : "BQACAgQAAyEFAATkiwQeAAMNacTbMaZk4sg1CaPu9ZZ6Dfkio8kAAgwdAAIHdihSTwX9MvVYtmM6BA",
+    
+    "አምላክ እንዴት ወደ አምላክ ይፀልያል?" : "BQACAgQAAyEFAATkiwQeAAMQacTbMRzZ4yCmC2JPLW7iwLsOHoAAAg8dAAIHdihSZqqDCB2OQhU6BA",
+    
+    "አምላክ እንዴት ይወልዳል?" : "BQACAgQAAyEFAATkiwQeAAMRacTbMed9vEegLIPBPTQoILT--40AAhAdAAIHdihS0ds89QKq1lA6BA",
+    
+    "ስንት አምላክ ነው ያላቹ?" : "BQACAgQAAyEFAATkiwQeAAMOacTbMUIqjlYCQCvzKuIkmaecm5QAAg0dAAIHdihS8mG5Xi5-0uY6BA",
+    
+    "አንድ አምላክ እንዴት የአንድ አምላክ ልጅ ይባላል?" : "BQACAgQAAyEFAATkiwQeAAMTacTbMdKoMbmiUWz0Rd4WMAWby9QAAhIdAAIHdihSoaptNhjhh-A6BA",
+    
+    "የውሃ ጥምቀት በኢየሱስ ክርስቶስ ስም" : "BQACAgQAAyEFAATkiwQeAAMWacTbMS3oCKVxFvlfMYJiBAq8nEIAAhUdAAIHdihSJ9OUTPAO0ao6BA",
+    
+    "ትምህርተ ሥላሴና የአረማውያኑ" : "BQACAgQAAyEFAATkiwQeAAMPacTbMXJsAmzgTpc-i8sQsFyPXJIAAg4dAAIHdihSyaA5H27yGsM6BA",
+    
+    "የኦንሊ ጂሰሱ_አብ ወልድና መንፈስ ቅዱስ" : "BQACAgQAAyEFAATkiwQeAAMVacTbMbVLit8MP8ZBqN7W5fD4pfMAAhQdAAIHdihSk2HT3OjY4ic6BA",
+    
+    "አብ ፣ ወልድና መንፈስ ቅዱስ የተለያዩ አካላት አይደሉምን" : "BQACAgQAAyEFAATkiwQeAAMSacTbMSGtXjsgRvk8DAQo4ud2cRwAAhEdAAIHdihS7tw9h3oYsWs6BA"
 }
 
 def start_bible_study(message):
@@ -428,36 +437,36 @@ https://www.churchofjesuschrist.org/comeuntochrist/believe/jesus/life-and-missio
     
     elif message.text == "Common Muslim questions about Christianity?":
         muslim_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        muslim_markup.row("እኩል ስልጣን ካላቸው በ ዩሐ5 ለምን አብ ከእኔ ይበልጣል አለ?")
-        muslim_markup.row("ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ አለ ወይ?")
-        muslim_markup.row("አምላክ እንዴት ወደ አምላክ ይፀልያል?")
-        muslim_markup.row("አምላክ እንዴት ይወልዳል?")
-        muslim_markup.row("ስንት አምላክ ነው ያላቹ?")
-        muslim_markup.row("አንድ አምላክ እንዴት የአንድ አምላክ ልጅ ይባላል?")
+        muslim_markup.row("እኩል ስልጣን ካላቸው በ ዩሐ5 ለምን አብ ከእኔ ይበልጣል አለ?")# check
+        muslim_markup.row("ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ አለ ወይ?")# check
+        muslim_markup.row("አምላክ እንዴት ወደ አምላክ ይፀልያል?")# check
+        muslim_markup.row("አምላክ እንዴት ይወልዳል?") # check
+        muslim_markup.row("ስንት አምላክ ነው ያላቹ?")# check
+        muslim_markup.row("አንድ አምላክ እንዴት የአንድ አምላክ ልጅ ይባላል?")# check
         muslim_markup.row("Back to Main Menu")
         bot.send_message(message.chat.id, "የትኛውን ጥናት መጀመር ይፈልጋሉ?", reply_markup=muslim_markup)
 
     elif message.text == "Common Only Jesus questions about Christianity":
         only_jesus_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        only_jesus_markup.row("የውሃ ጥምቀት በኢየሱስ ክርስቶስ ስም")
-        only_jesus_markup.row("ትምህርተ ሥላሴና የአረማውያኑ")
-        only_jesus_markup.row("የኦንሊ ጂሰሱ_አብ ወልድና መንፈስ ቅዱስ")
-        only_jesus_markup.row("አብ ፣ ወልድና መንፈስ ቅዱስ የተለያዩ አካላት አይደሉምን")
+        only_jesus_markup.row("የውሃ ጥምቀት በኢየሱስ ክርስቶስ ስም")# check
+        only_jesus_markup.row("ትምህርተ ሥላሴና የአረማውያኑ")# check
+        only_jesus_markup.row("የኦንሊ ጂሰሱ_አብ ወልድና መንፈስ ቅዱስ")#check
+        only_jesus_markup.row("አብ ፣ ወልድና መንፈስ ቅዱስ የተለያዩ አካላት አይደሉምን")#check
         only_jesus_markup.row("Back to Main Menu")
         bot.send_message(message.chat.id, "የትኛውን ጥናት መጀመር ይፈልጋሉ?", reply_markup=only_jesus_markup)
     
     elif message.text in STUDY_FILES_MAP:
         chat_id = message.chat.id
-        filename = STUDY_FILES_MAP[message.text]
-        file_path = os.path.join("study_materials", filename)
+        file_id = STUDY_FILES_MAP[message.text] 
         
-        if os.path.exists(file_path):
+        try:
             bot.send_chat_action(chat_id, 'upload_document')
-            with open(file_path, "rb") as doc:
-                bot.send_document(chat_id, doc, caption=f"📄 {message.text}")
-        else:
-            bot.send_message(chat_id, "⚠️ ፋይሉ አልተገኘም።")
-
+            
+            bot.send_document(chat_id, file_id, caption=f"📄 {message.text}")
+            
+        except Exception as e:
+            bot.send_message(chat_id, "⚠️ ፋይሉን ማግኘት አልተቻለም። እባክዎ አማካሪ ያነጋግሩ።")
+            print(f"Transfer Error: {e}")
     elif message.text == "Back to Main Menu":
         bot.send_message(message.chat.id, "ዋና ማውጫ", reply_markup=reply_keyboard)
 
