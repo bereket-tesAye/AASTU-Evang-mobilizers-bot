@@ -45,10 +45,6 @@ def _webhook_config_from_url(webhook_url):
     return normalized_url, f"{path}/"
 
 
-def _register_webhook_on_startup(webhook_url):
-    bot.remove_webhook()
-    bot.set_webhook(url=webhook_url, drop_pending_updates=False)
-
 def send_daily_lessons():
     db = None
     try:
@@ -509,7 +505,6 @@ def start_bot():
         webhook_url, webhook_path = _webhook_config_from_url(WEBHOOK_URL)
         listen_port = int(os.getenv("PORT", "8443"))
         print(f"Starting bot in webhook mode: {webhook_url}")
-        _register_webhook_on_startup(webhook_url)
         try:
             bot.run_webhooks(
                 listen="0.0.0.0",
