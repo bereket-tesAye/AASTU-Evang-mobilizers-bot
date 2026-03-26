@@ -2,6 +2,7 @@ import os
 import telebot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 from dotenv import load_dotenv  
+from urllib.parse import urlparse
 
 # DATABASE CONFIG
 import mysql.connector
@@ -27,6 +28,21 @@ load_dotenv()
 # bot tokens
 API_KEY = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(API_KEY)
+
+
+BOT_MODE = os.getenv("BOT_MODE", "polling").strip().lower()
+WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
+
+
+def _webhook_config_from_url(webhook_url):
+    parsed = urlparse(webhook_url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise ValueError("WEBHOOK_URL must be a valid HTTP(S) URL")
+    path = parsed.path.strip("/")
+    if not path:
+        raise ValueError("WEBHOOK_URL must include a non-root path, e.g. /telegram-webhook")
+    normalized_url = f"{parsed.scheme}://{parsed.netloc}/{path}/"
+    return normalized_url, f"{path}/"
 
 def send_daily_lessons():
     db = None
@@ -480,5 +496,35 @@ https://www.churchofjesuschrist.org/comeuntochrist/believe/jesus/life-and-missio
     else:
         bot.send_message(message.chat.id, "አልገባኝም። እባክዎ ከታች ካሉት አማራጮች አንዱን ይጫኑ ወይም አማራጮቹን ለማየት /start የሚለውን ይጠቀሙ", reply_markup=reply_keyboard)
 
+def start_bot():
+    if BOT_MODE == "webhook":
+        if not WEBHOOK_URL:
+            raise RuntimeError("WEBHOOK_URL is required when BOT_MODE=webhook")
 
-bot.infinity_polling()
+        webhook_url, webhook_path = _webhook_config_from_url(WEBHOOK_URL)
+        listen_port = int(os.getenv("PORT", "8443"))
+        print(f"Starting bot in webhook mode: {webhook_url}")
+        try:
+            bot.run_webhooks(
+                listen="localhost",
+                port=listen_port,
+                url_path=webhook_path,
+                webhook_url=webhook_url,
+                drop_pending_updates=False,
+            )
+        except ImportError as exc:
+            raise RuntimeError(
+                "Webhook mode requires fastapi, uvicorn, and starlette. Install them and retry."
+            ) from exc
+        return
+
+    if BOT_MODE != "polling":
+        print(f"Unknown BOT_MODE='{BOT_MODE}', defaulting to polling")
+
+    print("Starting bot in polling mode")
+    bot.remove_webhook()
+    bot.infinity_polling()
+
+
+if __name__ == "__main__":
+    start_bot()

@@ -42,7 +42,21 @@ A comprehensive Telegram bot designed to facilitate Bible study plans, spiritual
     ```text
     TELEGRAM_BOT_TOKEN=your_bot_token_here
     DB_PASSWORD=your_mysql_password_here
+    BOT_MODE=polling
+
+    # Webhook mode (only needed when BOT_MODE=webhook)
+    # Single public HTTPS URL. Must include a path.
+    # WEBHOOK_URL=https://your-domain.com/telegram-webhook
+    # Optional: local bind port (defaults to 8443)
+    # PORT=8443
     ```
+
+    `BOT_MODE` supports:
+    - `polling` (default)
+    - `webhook`
+
+    In `polling` mode, the bot runs `infinity_polling()`.
+    In `webhook` mode, the bot normalizes `WEBHOOK_URL` to end with `/` and uses that exact webhook path.
 
 5.  **Run the Bot:**
     ```bash
