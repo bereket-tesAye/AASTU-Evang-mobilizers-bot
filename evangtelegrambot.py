@@ -1,14 +1,11 @@
 import os
 import telebot
-<<<<<<< HEAD
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv 
 
-=======
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup
 from dotenv import load_dotenv  
 from urllib.parse import urlparse
->>>>>>> 66ed0a95898f47b301c4bd706872af22afd8bf0f
 
 # DATABASE CONFIG
 import mysql.connector
@@ -540,9 +537,6 @@ def start_bot():
         if not WEBHOOK_URL:
             raise RuntimeError("WEBHOOK_URL is required when BOT_MODE=webhook")
 
-<<<<<<< HEAD
-bot.infinity_polling()
-=======
         webhook_url, webhook_path = _webhook_config_from_url(WEBHOOK_URL)
         listen_port = int(os.getenv("PORT", "8443"))
         print(f"Starting bot in webhook mode: {webhook_url}")
@@ -570,4 +564,3 @@ bot.infinity_polling()
 
 if __name__ == "__main__":
     start_bot()
->>>>>>> 66ed0a95898f47b301c4bd706872af22afd8bf0f
