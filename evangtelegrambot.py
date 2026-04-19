@@ -14,10 +14,10 @@ from datetime import datetime
 # DATABASE CONNECTION
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root", 
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "root"), 
         password=os.getenv("DB_PASSWORD"), 
-        database="EvangBibleStudyPlan",
+        database=os.getenv("DB_NAME", "EvangBibleStudyPlan"),
         charset='utf8mb4'
     )
 
