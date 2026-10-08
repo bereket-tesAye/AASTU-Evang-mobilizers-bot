@@ -2,14 +2,13 @@ import os
 import telebot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
-
-from telebot.types import KeyboardButton, ReplyKeyboardMarkup
-from dotenv import load_dotenv  
 from urllib.parse import urlparse
 
 # DATABASE CONFIG
 import mysql.connector
 from datetime import datetime
+
+load_dotenv()
 
 # DATABASE CONNECTION
 def get_db_connection():
@@ -26,8 +25,6 @@ def get_db_connection():
 import mysql.connector
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
-
-load_dotenv()
 
 # bot tokens
 API_KEY = os.getenv("TELEGRAM_BOT_TOKEN")
