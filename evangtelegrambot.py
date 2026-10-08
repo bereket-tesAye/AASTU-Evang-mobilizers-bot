@@ -14,12 +14,11 @@ from datetime import datetime
 # DATABASE CONNECTION
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
+        host=os.getenv("DB_HOST", "localhost"),
         user="root",
         password=os.getenv("DB_PASSWORD"),
         database="EvangBibleStudyPlan",
         charset='utf8mb4'
-
     )
 
 # scheduler for daily messages
@@ -33,7 +32,27 @@ load_dotenv()
 # bot tokens
 API_KEY = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(API_KEY)
-MENTOR_CHAT_ID = 8067334396
+
+# Mentor chat IDs loaded from environment
+MENTOR_EVANGELISM_ID = int(os.getenv("MENTOR_EVANGELISM_ID", "111111111"))   # Super admin - notified for everything
+MENTOR_COUNSELING_ID = int(os.getenv("MENTOR_COUNSELING_ID", "222222222"))   # Notified for: አማካሪ ማግኘት እፈልጋለሁ
+MENTOR_BIBLE_STUDY_ID = int(os.getenv("MENTOR_BIBLE_STUDY_ID", "333333333")) # Notified for: ጥያቄ መጠየቅ እፈልጋልሁ
+
+# Maps a request source to the specialist mentor who should also be notified
+SPECIALIST_MENTOR_MAP = {
+    "አማካሪ ማግኘት እፈልጋለሁ": MENTOR_COUNSELING_ID,
+    "ጥያቄ መጠየቅ እፈልጋልሁ": MENTOR_BIBLE_STUDY_ID,
+}
+
+def notify_mentors(source, report):
+    """Send mentor report to the evangelism super admin and the relevant specialist."""
+    # Super admin always gets notified
+    bot.send_message(MENTOR_EVANGELISM_ID, report, parse_mode="Markdown")
+
+    # Notify specialist mentor if this source has one
+    specialist_id = SPECIALIST_MENTOR_MAP.get(source)
+    if specialist_id:
+        bot.send_message(specialist_id, report, parse_mode="Markdown")
 
 BOT_MODE = os.getenv("BOT_MODE", "polling").strip().lower()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
@@ -101,8 +120,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(send_daily_lessons, 'interval', minutes=60)
 scheduler.start()
 
-# FIX 2: MENTOR_CHAT_ID should be integer, not string
-MENTOR_CHAT_ID = 8067334396  # Remove quotes
+# FIX 2 resolved: mentor IDs now loaded from environment above
 waiting_for_mentor_username = {}
 
 # create reply keyboard
@@ -284,7 +302,7 @@ def start_mentor_request(message, source):
         "source" : source
         }
     if "አማካሪ ማግኘት እፈልጋለሁ" in source:
-        msg = """እኛን ለማግኘት ስለፈለጉ እናመሰግናለን🙏\nለማቋረጥ 'cancel' ብለው ይጻፉ።
+        msg = """እኛን ለማግኘት ስለፈለጉ እናመሰግናለን🙏\nበcounseling Team ወደ ሚሰጥ ወደ ማማከር አገልግሎት ይወስዶታል በዚህም በመመዝገብ ማንኛውም አይነት ምክር ማግኘት ይችላሉ።\nለማቋረጥ 'cancel' ብለው ይጻፉ።
 \nለመቀጠል እባክዎ ሙሉ ስምዎን ያስገቡ፦"""
 
     elif "በንሰሀ መመለስ እፈልጋለሁ" in source:
@@ -369,8 +387,8 @@ def process_mentor_steps(message):
 
             )
          
-            # Send to the mentor group/admin
-            bot.send_message(MENTOR_CHAT_ID, mentor_report, parse_mode="Markdown")
+            # Send to the relevant mentor(s)
+            notify_mentors(state['source'], mentor_report)
          
             # Confirm to the user
             bot.send_message(chat_id, "✅ ተመዝግቧል! አማካሪ በቅርቡ ያነጋግርዎታል። እግዚአብሔር ይባርክዎ! 🙏", reply_markup=reply_keyboard)
@@ -378,7 +396,6 @@ def process_mentor_steps(message):
           
 @bot.message_handler(func=lambda message: True)
 def check_button(message):
-    # FIX 5: Remove the incorrect if/elif inside "accept jesus" handler
     if message.text == "አማካሪ ማግኘት እፈልጋለሁ":
         general_mentor = """"""
         start_mentor_request(message, "አማካሪ ማግኘት እፈልጋለሁ")
