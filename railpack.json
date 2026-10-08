@@ -10,6 +10,6 @@
     "pkg-config"
   ],
   "deploy": {
-    "startCommand": "python evangtelegrambot.py"
+    "startCommand": "sh entrypoint.sh"
   }
 }

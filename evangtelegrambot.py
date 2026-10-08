@@ -38,7 +38,7 @@ MENTOR_BIBLE_STUDY_ID = int(os.getenv("MENTOR_BIBLE_STUDY_ID", "333333333")) # N
 # Maps a request source to the specialist mentor who should also be notified
 SPECIALIST_MENTOR_MAP = {
     "አማካሪ ማግኘት እፈልጋለሁ": MENTOR_COUNSELING_ID,
-    "ጥያቄ መጠየቅ እፈልጋልሁ": MENTOR_BIBLE_STUDY_ID,
+    "ጥያቄ መጠየቅ እፈልጋለሁ": MENTOR_BIBLE_STUDY_ID,
 }
 
 def notify_mentors(source, report):
@@ -130,7 +130,7 @@ reply_keyboard.row("በንሰሀ መመለስ እፈልጋለሁ") #give simple 
 reply_keyboard.row("ስለ ኢየሱስ ክርስቶስ በበለጠ ለማወቅ")
 reply_keyboard.row("የመጽሐፍ ቅዱስ ጥናት እቅድ ለማግኘት")
 reply_keyboard.row("አማካሪ ማግኘት እፈልጋለሁ") #assign mentor
-reply_keyboard.row("ጥያቄ መጠየቅ እፈልጋልሁ") #assign mentor
+reply_keyboard.row("ጥያቄ መጠየቅ እፈልጋለሁ") #assign mentor
 reply_keyboard.row("በስህተት ነው የነካሁት")
 
 # counseling bot replacement
@@ -177,11 +177,11 @@ def get_next_lesson_markup():
 def start_bible_study(message):
     user_id = message.chat.id
     book = "የዮሐንስ ወንጌል"
-    db = get_db_connection()
-    cursor = db.cursor(dictionary=True)
-
+    db = None
     try:
-       # Fetch Day 1 specifically
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
+        # Fetch Day 1 specifically
         cursor.execute("SELECT chapter, teaching_content FROM study_content WHERE book_name = %s AND day_number = 1", (book,))
         lesson = cursor.fetchone()
 
@@ -199,16 +199,21 @@ def start_bible_study(message):
             bot.send_message(user_id, text, parse_mode="Markdown", reply_markup=get_next_lesson_markup())
         else:
             bot.send_message(user_id, "⚠️ የጥናት ይዘቱ አልተገኘም። እባክዎ አስተዳዳሪውን ያነጋግሩ።")
+    except Exception as e:
+        print(f"DB Error in start_bible_study: {e}")
+        bot.send_message(user_id, "⚠️ ችግር ተፈጥሯል። እባክዎ ቆይተው ይሞክሩ።")
     finally:
-        cursor.close()
-        db.close()
+        if db and db.is_connected():
+            cursor.close()
+            db.close()
 
 @bot.callback_query_handler(func=lambda call: call.data == "next_bible_day")
 def handle_next_day(call):
     user_id = call.from_user.id
-    db = get_db_connection()
-    cursor = db.cursor(dictionary=True)
+    db = None
     try:
+        db = get_db_connection()
+        cursor = db.cursor(dictionary=True)
         # Find current progress
         cursor.execute("SELECT active_book, current_day FROM user_progress WHERE telegram_id = %s", (user_id,))
         user = cursor.fetchone()
@@ -247,10 +252,12 @@ def handle_next_day(call):
             bot.answer_callback_query(call.id)
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error in handle_next_day: {e}")
+        bot.answer_callback_query(call.id, "⚠️ ችግር ተፈጥሯል። እባክዎ ቆይተው ይሞክሩ።")
     finally:
-        cursor.close()
-        db.close()
+        if db and db.is_connected():
+            cursor.close()
+            db.close()
 
 # Welcome page on the bot
 @bot.message_handler(commands=['start'])
@@ -281,7 +288,7 @@ def show_help(message):
 • "ስለ ኢየሱስ ክርስቶስ በበለጠ ለማወቅ" - ስለ ኢየሱስ ሕይወትና አገልግሎት የበለጠ ለማወቅ ይህንን ይጫኑ።
 • "የመጽሐፍ ቅዱስ ጥናት እቅድ ለማግኘት" - የተለያዩ የመጽሐፍ ቅዱስ ጥናት እቅዶችንና እና ክርስትና ላይ ሚነሱ ጥያቄዎች ከነመልሳቸው እና ግብዓቶችን ያገኛሉ ።
 • "አማካሪ ማግኘት እፈልጋለሁ" - በማንኛውም ርዕስ ላይ የሚያናግሩት ሰው ከፈለጉ ይህንን ይጫኑ።
-• "ጥያቄ መጠየቅ እፈልጋልሁ" - ለማንኛውም ዓይነት ሃይማኖታዊ ጥያቄ ወይም ውይይት ይህንን ቁልፍ ይጠቀሙ።
+• "ጥያቄ መጠየቅ እፈልጋለሁ" - ለማንኛውም ዓይነት ሃይማኖታዊ ጥያቄ ወይም ውይይት ይህንን ቁልፍ ይጠቀሙ።
 • "በስህተት ነው የነካሁት" - ትዕዛዙን ሰርዘው ወደ ዋናው ማውጫ ለመመለስ።
 
 💡 አጠቃቀም፦
@@ -331,6 +338,10 @@ def no_mentor_assign(message):
     bot.send_message(message.chat.id,"""ችግር የለም😊! ሃሳብዎን ከቀየሩ በማንኛውም ጊዜ "/yes" የሚለውን መጫን ይችላሉ፤ እንዲሁም የመጽሐፍ ቅዱስ ጥናት እቅዱን ማየት ይችላሉ👇።
                         እግዚአብሔር ይባርክዎ!  🙏"""
     )
+
+@bot.message_handler(commands=['yes'])
+def yes_mentor_assign(message):
+    start_mentor_request(message, "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል")
 
 @bot.message_handler(func=lambda message: message.chat.id in user_states)
 def process_mentor_steps(message):
@@ -394,17 +405,13 @@ def process_mentor_steps(message):
 @bot.message_handler(func=lambda message: True)
 def check_button(message):
     if message.text == "አማካሪ ማግኘት እፈልጋለሁ":
-        general_mentor = """"""
         start_mentor_request(message, "አማካሪ ማግኘት እፈልጋለሁ")
 
-    elif message.text == "ጥያቄ መጠየቅ እፈልጋልሁ":
-        start_mentor_request(message, "ጥያቄ መጠየቅ እፈልጋልሁ")
+    elif message.text == "ጥያቄ መጠየቅ እፈልጋለሁ":
+        start_mentor_request(message, "ጥያቄ መጠየቅ እፈልጋለሁ")
 
     elif message.text == "በንሰሀ መመለስ እፈልጋለሁ":
         start_mentor_request(message, "በንሰሀ መመለስ እፈልጋለሁ")
- 
-    elif message.text == "/yes":
-        start_mentor_request(message, "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል")
 
     elif message.text == "ስለ ኢየሱስ ክርስቶስ በበለጠ ለማወቅ":
         explain_jesus_text = """ኢየሱስ ማነው? ወደ ሰላም የሚወስደውን መንገድ መረዳት!!
