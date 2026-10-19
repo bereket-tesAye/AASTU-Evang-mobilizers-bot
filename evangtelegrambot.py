@@ -1,14 +1,29 @@
 import os
+import threading
+from urllib.parse import urlparse
+from datetime import datetime
+from dotenv import load_dotenv
+from flask import Flask
 import telebot
 from telebot.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton
-from dotenv import load_dotenv
-from urllib.parse import urlparse
 
 # DATABASE CONFIG
 import mysql.connector
-from datetime import datetime
 
 load_dotenv()
+
+# Lightweight Flask health-check HTTP server for Render / monitoring
+app = Flask(__name__)
+
+@app.route("/")
+@app.route("/health")
+def health_check():
+    return "Bot is alive!", 200
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
 
 # DATABASE CONNECTION
 def get_db_connection():
@@ -440,9 +455,6 @@ def check_button(message):
 ከእየሱስ ጋር በዘላቂነት ህብረት ማድረግ እሚፈልጉ ከሆነ
 "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል" የሚለውን ቁልፍ ይጫኑ።
 
-ተጨማሪ መረጃ👇
-https://www.churchofjesuschrist.org/comeuntochrist/believe/jesus/life-and-mission-of-jesus-christ
-
                          ❤️ ኢየሱስ ሁሉንም ይወዳል!!"""
 
         bot.send_message(message.chat.id, explain_jesus_text)
@@ -561,6 +573,9 @@ def start_bot():
         return
     if BOT_MODE != "polling":
         print(f"Unknown BOT_MODE='{BOT_MODE}', defaulting to polling")
+
+    print("Starting background health-check server...")
+    threading.Thread(target=run_web_server, daemon=True).start()
 
     print("Starting bot in polling mode")
     bot.remove_webhook()
