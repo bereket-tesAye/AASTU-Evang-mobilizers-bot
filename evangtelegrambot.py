@@ -62,11 +62,8 @@ bot = telebot.TeleBot(API_KEY)
 
 
 # ─────────────────────────────────────────────
-#  In-memory mapping: user_id <-> forum topic_id
-#  { user_telegram_id: topic_id }
+#  Topic management — persisted in DB
 # ─────────────────────────────────────────────
-user_topic_map: dict[int, int] = {}
-
 
 # Maps source button text to a short emoji label for the topic title
 SOURCE_LABEL_MAP = {
@@ -77,10 +74,56 @@ SOURCE_LABEL_MAP = {
 }
 
 
+def get_topic_id_from_db(user_id: int):
+    """Look up the stored forum topic_id for a user. Returns int or None."""
+    db = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT topic_id FROM user_progress WHERE telegram_id = %s",
+            (user_id,)
+        )
+        row = cursor.fetchone()
+        if row and row[0]:
+            return int(row[0])
+        return None
+    except Exception as e:
+        print(f"DB error fetching topic_id for {user_id}: {e}")
+        return None
+    finally:
+        if db and db.is_connected():
+            cursor.close()
+            db.close()
+
+
+def save_topic_id_to_db(user_id: int, topic_id: int):
+    """Persist the forum topic_id for a user in the database."""
+    db = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute(
+            """INSERT INTO user_progress (telegram_id, topic_id)
+               VALUES (%s, %s)
+               ON DUPLICATE KEY UPDATE topic_id = %s""",
+            (user_id, topic_id, topic_id)
+        )
+        db.commit()
+    except Exception as e:
+        print(f"DB error saving topic_id for {user_id}: {e}")
+    finally:
+        if db and db.is_connected():
+            cursor.close()
+            db.close()
+
+
 def get_or_create_topic(user_id: int, display_name: str, source: str = "") -> int:
-    """Return existing forum topic ID for the user, or create a new one."""
-    if user_id in user_topic_map:
-        return user_topic_map[user_id]
+    """Return existing forum topic ID for the user (from DB), or create a new one."""
+    # Check DB first
+    existing = get_topic_id_from_db(user_id)
+    if existing:
+        return existing
 
     category = SOURCE_LABEL_MAP.get(source, "💬 General")
     try:
@@ -89,18 +132,22 @@ def get_or_create_topic(user_id: int, display_name: str, source: str = "") -> in
             name=f"{category} | {display_name}"
         )
         topic_id = result.message_thread_id
-        user_topic_map[user_id] = topic_id
+        save_topic_id_to_db(user_id, topic_id)
         return topic_id
     except Exception as e:
         print(f"Error creating forum topic for {user_id}: {e}")
         raise
 
 
+def get_user_topic_id(user_id: int):
+    """Return topic_id for a user if they are registered, else None."""
+    return get_topic_id_from_db(user_id)
+
+
 def relay_to_admin(user_id: int, display_name: str, message):
     """Forward a user message into their dedicated admin group topic."""
     topic_id = get_or_create_topic(user_id, display_name)
     try:
-        # Forward the original message into the topic thread
         bot.forward_message(
             chat_id=ADMIN_GROUP_ID,
             from_chat_id=user_id,
@@ -121,14 +168,27 @@ def relay_to_user(admin_message):
         return  # Message not inside a topic thread, ignore
 
     # Find the user whose topic this is
-    user_id = next(
-        (uid for uid, tid in user_topic_map.items() if tid == thread_id),
-        None
-    )
+    user_id = None
+    db = None
+    try:
+        db = get_db_connection()
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT telegram_id FROM user_progress WHERE topic_id = %s",
+            (thread_id,)
+        )
+        row = cursor.fetchone()
+        if row:
+            user_id = int(row[0])
+    except Exception as e:
+        print(f"DB error looking up user for topic {thread_id}: {e}")
+    finally:
+        if db and db.is_connected():
+            cursor.close()
+            db.close()
 
     if user_id is None:
-        # Try to resolve from topic title via getForumTopics (fallback)
-        print(f"Warning: received reply in topic {thread_id} but no user mapping found.")
+        print(f"Warning: received reply in topic {thread_id} but no user found in DB.")
         return
 
     try:
@@ -583,7 +643,7 @@ def check_button(message):
     chat_id = message.chat.id
 
     # ── If user has an active topic (i.e. already registered), relay freely ──
-    if chat_id in user_topic_map and text not in (
+    if get_user_topic_id(chat_id) is not None and text not in (
         "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል", "በንሰሀ መመለስ እፈልጋለሁ",
         "ስለ ኢየሱስ ክርስቶስ በበለጠ ለማወቅ", "የመጽሐፍ ቅዱስ ጥናት እቅድ ለማግኘት",
         "አማካሪ ማግኘት እፈልጋለሁ", "ጥያቄ መጠየቅ እፈልጋለሁ", "በስህተት ነው የነካሁት",
