@@ -687,8 +687,8 @@ def check_button(message):
 
     elif text == "Common Muslim questions about Christianity?":
         muslim_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        muslim_markup.row("እኩል ስልጣን ካላቸው በ ዩሐ5 ለምን አብ ከእኔ ይበልጣል አለ?")
-        muslim_markup.row("ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ አለ ወይ?")
+        muslim_markup.row("እየሱስ ከአብ ጋር እኩል ስልጣን የለውም")
+        muslim_markup.row("ሥላሴ ሚለው ቃል መፅሐፍ ቅዱስ ላይ የለም")
         muslim_markup.row("አምላክ እንዴት ወደ አምላክ ይፀልያል?")
         muslim_markup.row("አምላክ እንዴት ይወልዳል?")
         muslim_markup.row("ስንት አምላክ ነው ያላቹ?")
