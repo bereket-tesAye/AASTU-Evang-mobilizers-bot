@@ -840,7 +840,17 @@ def start_bot():
 
     print("Starting bot in polling mode...")
     bot.remove_webhook()
-    bot.infinity_polling(allowed_updates=["message", "callback_query", "my_chat_member"])
+    # Retry loop to handle 409 conflicts during redeploys
+    import time
+    while True:
+        try:
+            bot.infinity_polling(allowed_updates=["message", "callback_query", "my_chat_member"])
+        except Exception as e:
+            if "409" in str(e):
+                print("409 Conflict — another instance is running. Retrying in 5s...")
+                time.sleep(5)
+            else:
+                raise
 
 
 if __name__ == "__main__":
