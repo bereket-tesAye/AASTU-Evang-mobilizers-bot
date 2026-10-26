@@ -68,15 +68,25 @@ bot = telebot.TeleBot(API_KEY)
 user_topic_map: dict[int, int] = {}
 
 
-def get_or_create_topic(user_id: int, display_name: str) -> int:
+# Maps source button text to a short emoji label for the topic title
+SOURCE_LABEL_MAP = {
+    "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል": "✝️ Salvation",
+    "በንሰሀ መመለስ እፈልጋለሁ":             "🔄 Repentance",
+    "አማካሪ ማግኘት እፈልጋለሁ":             "🤝 Counseling",
+    "ጥያቄ መጠየቅ እፈልጋለሁ":              "📖 Bible Q&A",
+}
+
+
+def get_or_create_topic(user_id: int, display_name: str, source: str = "") -> int:
     """Return existing forum topic ID for the user, or create a new one."""
     if user_id in user_topic_map:
         return user_topic_map[user_id]
 
+    category = SOURCE_LABEL_MAP.get(source, "💬 General")
     try:
         result = bot.create_forum_topic(
             chat_id=ADMIN_GROUP_ID,
-            name=f"👤 {display_name} ({user_id})"
+            name=f"{category} | {display_name}"
         )
         topic_id = result.message_thread_id
         user_topic_map[user_id] = topic_id
@@ -397,7 +407,7 @@ def process_mentor_steps(message):
 
         # ── Create a forum topic for this user in the admin group ──
         try:
-            topic_id = get_or_create_topic(chat_id, display_name)
+            topic_id = get_or_create_topic(chat_id, display_name, source)
 
             # Post the registration summary into their topic
             registration_report = (
