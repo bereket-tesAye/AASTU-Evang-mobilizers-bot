@@ -167,6 +167,8 @@ def relay_to_user(admin_message):
     if not thread_id:
         return  # Message not inside a topic thread, ignore
 
+    print(f"[relay_to_user] Received message in thread {thread_id} from {admin_message.from_user.id if admin_message.from_user else 'unknown'}")
+
     # Find the user whose topic this is
     user_id = None
     db = None
@@ -371,7 +373,8 @@ def start_mentor_request(message, source: str):
     func=lambda m: (
         m.chat.id == ADMIN_GROUP_ID
         and m.message_thread_id is not None
-        and not (m.from_user and m.from_user.is_bot)
+        and m.from_user is not None
+        and m.from_user.id != bot.get_me().id  # ignore messages from the bot itself
     )
 )
 def handle_admin_reply(message):
