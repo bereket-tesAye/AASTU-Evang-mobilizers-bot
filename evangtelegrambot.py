@@ -70,7 +70,7 @@ SOURCE_LABEL_MAP = {
     "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል": "✝️ Salvation",
     "በንሰሀ መመለስ እፈልጋለሁ":             "🔄 Repentance",
     "አማካሪ ማግኘት እፈልጋለሁ":             "🤝 Counseling",
-    "ጥያቄ መጠየቅ እፈልጋለሁ":              "📖 Bible Q&A",
+    "ጥያቄ መጠየቅ እፈልጋለሁ":              "📖 Endekalu",
 }
 
 
