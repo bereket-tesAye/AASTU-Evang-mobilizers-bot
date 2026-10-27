@@ -59,6 +59,7 @@ BOT_MODE    = os.getenv("BOT_MODE", "polling").strip().lower()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
 
 bot = telebot.TeleBot(API_KEY)
+BOT_ID = bot.get_me().id  # cache bot's own ID at startup
 
 
 # ─────────────────────────────────────────────
@@ -374,10 +375,11 @@ def start_mentor_request(message, source: str):
         m.chat.id == ADMIN_GROUP_ID
         and m.message_thread_id is not None
         and m.from_user is not None
-        and m.from_user.id != bot.get_me().id  # ignore messages from the bot itself
+        and m.from_user.id != BOT_ID
     )
 )
 def handle_admin_reply(message):
+    print(f"[handle_admin_reply] thread={message.message_thread_id} from={message.from_user.id} text={message.text[:30] if message.text else 'non-text'}")
     relay_to_user(message)
 
 
@@ -646,7 +648,9 @@ def check_button(message):
     chat_id = message.chat.id
 
     # ── If user has an active topic (i.e. already registered), relay freely ──
-    if get_user_topic_id(chat_id) is not None and text not in (
+    topic_id = get_user_topic_id(chat_id)
+    print(f"[check_button] chat_id={chat_id} topic_id={topic_id} text={text[:30]}")
+    if topic_id is not None and text not in (
         "ኢየሱስን እንደ ግል አዳኝ አድርጌ ለመቀበል", "በንሰሀ መመለስ እፈልጋለሁ",
         "ስለ ኢየሱስ ክርስቶስ በበለጠ ለማወቅ", "የመጽሐፍ ቅዱስ ጥናት እቅድ ለማግኘት",
         "አማካሪ ማግኘት እፈልጋለሁ", "ጥያቄ መጠየቅ እፈልጋለሁ", "በስህተት ነው የነካሁት",
