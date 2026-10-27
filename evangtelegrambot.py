@@ -839,18 +839,35 @@ def start_bot():
     threading.Thread(target=run_web_server, daemon=True).start()
 
     print("Starting bot in polling mode...")
-    bot.remove_webhook()
-    # Retry loop to handle 409 conflicts during redeploys
+    # Explicitly clear webhook and set allowed_updates via Telegram API
+    import requests as req
     import time
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    req.get(
+        f"https://api.telegram.org/bot{token}/deleteWebhook",
+        params={"drop_pending_updates": False}
+    )
+    # Tell Telegram which update types we want
+    req.get(
+        f"https://api.telegram.org/bot{token}/getUpdates",
+        params={"allowed_updates": '["message","callback_query","my_chat_member"]', "timeout": 0}
+    )
+    print("Webhook cleared, allowed_updates set.")
+    # Retry loop to handle 409 conflicts during redeploys
     while True:
         try:
-            bot.infinity_polling(allowed_updates=["message", "callback_query", "my_chat_member"])
+            bot.infinity_polling(
+                timeout=30,
+                long_polling_timeout=30,
+                allowed_updates=["message", "callback_query", "my_chat_member"]
+            )
         except Exception as e:
             if "409" in str(e):
-                print("409 Conflict — another instance is running. Retrying in 5s...")
-                time.sleep(5)
+                print("409 Conflict — another instance running. Retrying in 10s...")
+                time.sleep(10)
             else:
-                raise
+                print(f"Polling error: {e}. Retrying in 5s...")
+                time.sleep(5)
 
 
 if __name__ == "__main__":
